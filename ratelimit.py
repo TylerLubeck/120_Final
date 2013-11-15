@@ -1,3 +1,8 @@
+from django.core.cache import get_cache
+from datetime import datetime as dt
+from datetime import timedelta
+cache = get_cache('rate_limiting')
+
 def rate_limit_by_ip(limit_for=30, limit=1, how_many_hits=50, exception_list=[]):
     """
     Django decorator to limit how often an ip can acess a view.
@@ -15,4 +20,33 @@ def rate_limit_by_ip(limit_for=30, limit=1, how_many_hits=50, exception_list=[])
             #shitty code
 
     """
-    
+    def decorator(func):
+        @wraps(func, assigned=available_attrs(func))
+        def inner(request, *args, **kwargs):
+            remote_addr = request.META.REMOTE_ADDR
+
+            if remote_addr in exception_list:
+                return func(request, *args, **kwargs)
+
+            count = cache.get(remote_addr)
+            
+            if count is None:
+                d = {
+                    'how_often' : 1,
+                    'whenSeen' : dt.now(),
+                    'allow_again' : None
+                }
+                cache.set(remote_addr, d, limit_for)
+                return func(request, *args, **kwargs)
+            
+            else:
+                count['how_often'] += 1
+                
+            """
+            else:
+                count[0] += 1
+                delta = timedelta(seconds=limit)
+                now = dt.now() - delta
+                now.microsecond = count[1].microsecond
+                if count[1] > now: 
+            """     
