@@ -1,9 +1,10 @@
 from django.core.cache import get_cache
 from datetime import datetime as dt
 from datetime import timedelta
+#Get a cache instance that is specific for our plugin
 cache = get_cache('rate_limiting')
 
-def rate_limit_by_ip(limit_for=30, limit=1, how_many_hits=50, exception_list=[]):
+def rate_limit_by_ip(limit_for=30, limit=1, how_many_hits=50, exception_list=None:
     """
     Django decorator to limit how often an ip can acess a view.
     Args:
@@ -25,7 +26,7 @@ def rate_limit_by_ip(limit_for=30, limit=1, how_many_hits=50, exception_list=[])
         def inner(request, *args, **kwargs):
             remote_addr = request.META.REMOTE_ADDR
 
-            if remote_addr in exception_list:
+            if exception_list and remote_addr in exception_list:
                 return func(request, *args, **kwargs)
 
             count = cache.get(remote_addr)
@@ -34,19 +35,17 @@ def rate_limit_by_ip(limit_for=30, limit=1, how_many_hits=50, exception_list=[])
                 d = {
                     'how_often' : 1,
                     'whenSeen' : dt.now(),
-                    'allow_again' : None
+                    'timeout' : dt.now() + timedelta(seconds=limit),
+                    'allow_again' : None,
                 }
+                d['whenSeen'].microsecond = 0
+                d['timeout'].microsecond = 0
                 cache.set(remote_addr, d, limit_for)
                 return func(request, *args, **kwargs)
             
             else:
-                count['how_often'] += 1
+                sec = how_many_hits / limit
+                time_check = timedelta(seconds=sec)
+
                 
-            """
-            else:
-                count[0] += 1
-                delta = timedelta(seconds=limit)
-                now = dt.now() - delta
-                now.microsecond = count[1].microsecond
-                if count[1] > now: 
-            """     
+                if count['timeout'] >= 
