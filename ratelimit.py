@@ -42,11 +42,3 @@ def rate_limit_by_ip(limit_for=30, limit=1, how_many_hits=50, exception_list=[])
             else:
                 count['how_often'] += 1
                 
-            """
-            else:
-                count[0] += 1
-                delta = timedelta(seconds=limit)
-                now = dt.now() - delta
-                now.microsecond = count[1].microsecond
-                if count[1] > now: 
-            """     
