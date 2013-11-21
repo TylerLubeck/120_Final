@@ -1,5 +1,10 @@
 from django.core.cache import get_cache
+from functools import wraps
+from django.utils.decorators import available_attrs
+import logging
+from django.http import HttpResponse
 
+logger = logging.getLogger('django.request')
 #Get a cache instance that is specific for our plugin
 cache = get_cache('rate_limiting')
 
@@ -19,15 +24,15 @@ def rate_limit_by_ip(how_many_hits=50, in_how_long=1, exception_list=[]):
             #shitty code
 
     """
-
     def decorator(func):
         @wraps(func, assigned=available_attrs(func))
         def inner(request, *args, **kwargs):
+            print "IN THE INNER PART"
             remote_addr = request.META.REMOTE_ADDR
-
+            retVal = None
             #Allow for exceptions
             if remote_addr in exception_list:
-                return func(request, *args, **kwargs)
+                retVal = func(request, *args, **kwargs)
 
             count = cache.get(remote_addr)
 
@@ -41,9 +46,14 @@ def rate_limit_by_ip(how_many_hits=50, in_how_long=1, exception_list=[]):
                 cache.set(remote_addr, True, cacheTime)
                 
                 #Allow them in to the function
-                return func(request, *args, **kwargs)
+                retVal = func(request, *args, **kwargs)
             
             #We've seen them in the limit time, so sucks to be you
             else:
                 #429 is the error code for 'Too Many Requests'
-                return HttpResponse(status=429)
+                retVal = HttpResponse(status=400)
+            
+            print retVal            
+            return retVal
+        return inner
+    return decorator
