@@ -1,6 +1,6 @@
 from django.core.cache import get_cache
 
-#Set up our own space in the cache
+#Get a cache instance that is specific for our plugin
 cache = get_cache('rate_limiting')
 
 def rate_limit_by_ip(how_many_hits=50, in_how_long=1, exception_list=[]):
@@ -19,6 +19,7 @@ def rate_limit_by_ip(how_many_hits=50, in_how_long=1, exception_list=[]):
             #shitty code
 
     """
+
     def decorator(func):
         @wraps(func, assigned=available_attrs(func))
         def inner(request, *args, **kwargs):
@@ -44,6 +45,5 @@ def rate_limit_by_ip(how_many_hits=50, in_how_long=1, exception_list=[]):
             
             #We've seen them in the limit time, so sucks to be you
             else:
-                
                 #429 is the error code for 'Too Many Requests'
                 return HttpResponse(status=429)
