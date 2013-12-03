@@ -22,3 +22,22 @@ ratelimit.py contains comments that describe the process in detail, but the gist
 3. We attempt to retrieve a value from the cache using the key.
 4. If a value is NOT found, we allow the request through to the view function. We also do some math to determine how long until a request from that key should be allowed in again. We then insert they key in to the cache, and set the timeout to be the time determined in the math step.
 5. If a value IS found, it means that the requestor has tried to access the endpoint too recently. They are not allowed in to the view, and are given an error message in JSON format.
+
+##Running the sample##
+
+1. Make sure you have memcached installed on your machine
+2. Create a python virtual environment, and with it active, run: 
+```bash 
+pip install -r requirements.txt
+```
+3. From the sample directory, run
+```bash
+python manage.py runserver
+```
+4. Run the two test scripts with
+```bash
+bash infinitehits.sh
+bash slowhits.sh
+```
+
+
