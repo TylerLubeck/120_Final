@@ -31,7 +31,7 @@ ratelimit.py contains comments that describe the process in detail, but the gist
 pip install -r requirements.txt
 ```
 3. From the sample directory, run
-``
+```
 python manage.py runserver
 ```
 4. Run the two test scripts with
