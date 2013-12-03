@@ -27,15 +27,15 @@ ratelimit.py contains comments that describe the process in detail, but the gist
 
 1. Make sure you have memcached installed on your machine
 2. Create a python virtual environment, and with it active, run: 
-```bash 
+```
 pip install -r requirements.txt
 ```
 3. From the sample directory, run
-```bash
+``
 python manage.py runserver
 ```
 4. Run the two test scripts with
-```bash
+```
 bash infinitehits.sh
 bash slowhits.sh
 ```
