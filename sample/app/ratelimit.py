@@ -3,7 +3,7 @@ from functools import wraps
 from django.utils.decorators import available_attrs
 import logging
 from django.http import HttpResponse
-
+import json
 logger = logging.getLogger('django.request')
 #Get a cache instance that is specific for our plugin
 cache = get_cache('rate_limiting')
@@ -35,9 +35,9 @@ def rate_limit_by_ip(how_many_hits=50, in_how_long=1, exception_list=[]):
             print 'KEY:" '+ cache_key + '"'
             retVal = None
             #Allow for exceptions
+            #cache.clear()
             if remote_addr in exception_list:
                 retVal = func(request, *args, **kwargs)
-
             count = cache.get(cache_key)
             print 'COUNT IS', count
             #We haven't seen them before
@@ -45,9 +45,10 @@ def rate_limit_by_ip(how_many_hits=50, in_how_long=1, exception_list=[]):
                 # Figure out how frequently a hit would have to occur in
                 # order to hit the limit
                 cacheTime = how_many_hits / in_how_long
+                cacheTime = float(in_how_long) / float(how_many_hits)
                 print cacheTime
                 #Put them in the cache
-                cache.set(cache_key, 'cached', cacheTime)
+                cache.set(cache_key, 'cached', 1)
                 print cache.get(cache_key) 
                 #Allow them in to the function
                 retVal = func(request, *args, **kwargs)
@@ -55,7 +56,8 @@ def rate_limit_by_ip(how_many_hits=50, in_how_long=1, exception_list=[]):
             #We've seen them in the limit time, so sucks to be you
             else:
                 #429 is the error code for 'Too Many Requests'
-                retVal = HttpResponse(status=429)
+                d = {'error': "You've hit your rate limit"}
+                retVal = HttpResponse(json.dumps(d), content_type="application/json", status=429)
             return retVal
         return inner
     return decorator
