@@ -25,35 +25,39 @@ def rate_limit_by_ip(how_many_hits=50, in_how_long=1, exception_list=[]):
 
     """
     def decorator(func):
+        print 'SOME SHIT BAD'
         @wraps(func, assigned=available_attrs(func))
         def inner(request, *args, **kwargs):
             print "IN THE INNER PART"
-            remote_addr = request.META.REMOTE_ADDR
+            remote_addr = request.META['REMOTE_ADDR']
+            cache_key = func.__name__ + '_' + str(remote_addr)
+            cache_key = str(cache_key)
+            print 'KEY:" '+ cache_key + '"'
             retVal = None
             #Allow for exceptions
             if remote_addr in exception_list:
                 retVal = func(request, *args, **kwargs)
 
-            count = cache.get(remote_addr)
-
+            count = cache.get(cache_key)
+            print 'COUNT IS', count
             #We haven't seen them before
             if count is None:
                 # Figure out how frequently a hit would have to occur in
                 # order to hit the limit
                 cacheTime = how_many_hits / in_how_long
-
+                print cacheTime
                 #Put them in the cache
-                cache.set(remote_addr, True, cacheTime)
-                
+                cache.set(cache_key, 'cached', cacheTime)
+                print cache.get(cache_key) 
                 #Allow them in to the function
                 retVal = func(request, *args, **kwargs)
             
             #We've seen them in the limit time, so sucks to be you
             else:
                 #429 is the error code for 'Too Many Requests'
-                retVal = HttpResponse(status=400)
-            
-            print retVal            
+                retVal = HttpResponse(status=429)
             return retVal
         return inner
     return decorator
+
+
