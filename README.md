@@ -37,7 +37,6 @@ python manage.py runserver
 4. Run the two test scripts with
 ```
 bash infinitehits.sh
-
 bash slowhits.sh
 ```
 
