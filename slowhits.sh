@@ -5,8 +5,9 @@
 
 COUNTER=0
 while [ TRUE ]; do
-	#curl http://localhost:8000
-	let COUNTER=COUNTER+1
+	curl http://localhost:8000
+	echo ""
+    let COUNTER=COUNTER+1
 	echo "The server has been hit $COUNTER times."
 	sleep 3
 done
